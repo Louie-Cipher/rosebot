@@ -4,6 +4,8 @@ import client from "../client";
 
 const announcingChannelId = '976262482488328263';
 
+let isLive = false;
+
 const buttons = new MessageActionRow()
     .setComponents([
         new MessageButton()
@@ -12,11 +14,13 @@ const buttons = new MessageActionRow()
             .setStyle('LINK')
     ]);
 
+export { isLive };
+
 export default async function liveAnnouncing(newPresence: Presence, oldPresence?: Presence): Promise<any> {
 
     try {
         const wasLive = oldPresence && oldPresence.activities.length > 0 && oldPresence.activities.some(ac => ac.type === 'STREAMING');
-        const isLive = newPresence.activities.length > 0 && newPresence.activities.some(ac => ac.type === 'STREAMING');
+        isLive = newPresence.activities.length > 0 && newPresence.activities.some(ac => ac.type === 'STREAMING');
 
         if (wasLive === true && isLive === false) // Stream ended
             return client.user.setActivity();
