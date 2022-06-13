@@ -31,7 +31,7 @@ export default new Command({
     }
 });
 
-const empty = '⬜';
+const empty = '<:invisible:986016811290071050>';
 const p1emoji = '❎';
 const p2emoji = '⭕';
 const restartButton = new MessageActionRow().addComponents(
@@ -55,7 +55,7 @@ async function singlePlayer(interaction: CommandInteraction, memberDB: MembersDB
                 description: 'Por enquanto, apostas vs IA com apostas não estão disponíveis\n'+
                 'Você ainda pode jogar contra mim sem apostar, ou apostar com outro jogador'
             }]
-        })
+        });
 
         if (betValue > memberDB.wallet)
             return interaction.editReply({ content: `Saldo insuficiente para essa aposta` });
