@@ -12,7 +12,7 @@ export default new Command({
             .setRequired(false)
         ),
     execute: async ({ interaction }) => {
-        await interaction.deferReply({ ephemeral: true });
+        await interaction.deferReply({ ephemeral: false });
         const player2 = interaction.options.getUser('player2');
 
         if (player2) multiPlayer(interaction, player2);
