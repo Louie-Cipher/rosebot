@@ -19,10 +19,17 @@ export default new Command({
         else singlePlayer(interaction);
     }
 });
-const empty = '⚪';
-const p1Emoji = '🔴';
-const p2Emoji = '🟡';
+const empty = '<:connect4_empty:986083607900749935>';
+const p1Emoji = '<:connect4_red:986083638930190386>';
+const p2Emoji = '<:connect4_yellow:986083667556323388>';
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+const restartButton = new MessageActionRow()
+    .addComponents(
+        new MessageButton()
+            .setLabel('Novo jogo')
+            .setStyle('SUCCESS')
+            .setEmoji('🔄')
+    );
 
 async function multiPlayer(interaction: CommandInteraction, player2: User): Promise<any> {
 
@@ -61,7 +68,7 @@ async function multiPlayer(interaction: CommandInteraction, player2: User): Prom
         round++;
 
         const columnChoice = parseInt(buttonInt.customId);
-        const playerEmoji = roundPlayer === player1 ? p1Emoji : p2Emoji;
+        const playerEmoji = roundPlayer === player1 ? '🔴' : '🟡';
         const playerMove = insertOnColum(board, columnChoice, playerEmoji);
 
         board = playerMove.board;
@@ -100,7 +107,7 @@ async function multiPlayer(interaction: CommandInteraction, player2: User): Prom
 
     function WO() {
         const winner = roundPlayer === player1 ? player2 : player1;
-        const winnerEmoji = roundPlayer === player1 ? p2Emoji : p1Emoji;
+        const winnerEmoji = roundPlayer === player1 ? '🟡' : '🔴';
 
         embed.setDescription(boardToString(board))
             .setTitle(`${winnerEmoji} Connect 4 ${winnerEmoji}`)
@@ -318,11 +325,9 @@ function boardToString(board: Collection<number, string>) {
         string += `${board.get(i)}`;
 
         if (i % 8 === 0) string += '\n';
-        else string += `‎ ‎ ‎`;
     }
     for (let i = 0; i < 8; i++) {
         string += buttonsEmojis[i];
-        if (i < 7) string += '‎ ‎ ‎';
     }
 
     return string;

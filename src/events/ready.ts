@@ -16,9 +16,7 @@ client.on('ready', async () => {
 
         setInterval(async () => { await voiceXP(guild); }, 60_000 * 5);
 
-        setInterval(async () => {
-            await updateStatus();
-        }, 5_000);
+        setInterval(async () => { await updateStatus(); }, 5_000);
 
     } catch (err) { consoleError('[EVENT:READY] ', err) }
 });
@@ -30,6 +28,7 @@ async function updateStatus() {
 
         let i = 0;
 
+        moment.locale('pt-br');
         const readySince = moment(client.readyAt).fromNow();
 
         const activities: ActivityOptions[] = [
