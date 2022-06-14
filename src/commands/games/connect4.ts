@@ -23,13 +23,14 @@ const empty = '<:connect4_empty:986083607900749935>';
 const p1Emoji = '<:connect4_red:986083638930190386>';
 const p2Emoji = '<:connect4_yellow:986083667556323388>';
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-const restartButton = new MessageActionRow()
+const restartButton = [new MessageActionRow()
     .addComponents(
         new MessageButton()
             .setLabel('Novo jogo')
+            .setCustomId('restart')
             .setStyle('SUCCESS')
             .setEmoji('🔄')
-    );
+    )];
 
 async function multiPlayer(interaction: CommandInteraction, player2: User): Promise<any> {
 
@@ -56,38 +57,85 @@ async function multiPlayer(interaction: CommandInteraction, player2: User): Prom
         filter: (int) => int.isButton() && [player1.id, player2.id].includes(int.user.id)
     });
 
+    let p1Victories = 0;
+    let p2Victories = 0;
+    let ties = 0;
+    let games = 1;
+
     let round = 0;
     let wo = setTimeout(WO, 180_000);
+
+    let restartPlayers = new Collection<string, User>();
 
     collector.on('collect', async (buttonInt): Promise<any> => {
         if (!buttonInt.isButton()) return;
         buttonInt.deferReply({ ephemeral: false }).then(() => buttonInt.deleteReply().catch(() => { }));
+
+        if (buttonInt.customId === 'restart') {
+
+            if (restartPlayers.has(buttonInt.user.id)) return;
+
+            restartPlayers.set(buttonInt.user.id, player1);
+
+            if (restartPlayers.size < 2) return;
+
+            clearTimeout(wo);
+            wo = setTimeout(WO, 180_000);
+
+            games++;
+            restartPlayers.clear();
+            roundPlayer = p1Victories < p2Victories ? player1 : player2;
+
+            board = initBoard();
+            embed.setTitle('🔴 Connect 4 🟡')
+                .setDescription(boardToString(board))
+                .setFields([{ name: 'Vez de', value: roundPlayer.toString() }]);
+
+            return message.edit({
+                content: `${player1} vs ${player2}`,
+                embeds: [embed],
+                components: buttons(board)
+            });
+        }
 
         if (buttonInt.user.id !== roundPlayer.id) return;
         clearTimeout(wo);
         round++;
 
         const columnChoice = parseInt(buttonInt.customId);
-        const playerEmoji = roundPlayer === player1 ? '🔴' : '🟡';
+        const playerEmoji = roundPlayer === player1 ? p1Emoji : p2Emoji;
         const playerMove = insertOnColum(board, columnChoice, playerEmoji);
 
         board = playerMove.board;
 
         if (checkWin(board, playerMove.addedSpace) === true) {
+            roundPlayer.id === player1.id ? p1Victories++ : p2Victories++;
+
             embed
                 .setDescription(boardToString(board))
                 .setTitle(`${playerEmoji} ${roundPlayer.username} venceu! ${playerEmoji}`)
-                .setFields([]);
+                .setFields([
+                    { name: 'Partidas jogadas', value: `${games}`, inline: true },
+                    { name: `Vitórias de ${player1.username}`, value: `${p1Victories}`, inline: true },
+                    { name: `Vitórias de ${player2.username}`, value: `${p2Victories}`, inline: true },
+                    { name: 'Empates', value: `${ties}`, inline: true },
+                ]);
 
-            collector.stop();
-            return message.edit({ embeds: [embed] });
+            return message.edit({ embeds: [embed], components: restartButton });
         }
 
         if (board.filter(emoji => emoji === empty).size === 0) {
-            embed.setDescription(boardToString(board));
-            embed.setTitle(`${p1Emoji} Empate! Todos os espaços preenchidos ${p2Emoji}`);
+            ties++;
 
-            collector.stop();
+            embed.setDescription(boardToString(board));
+            embed.setTitle(`🔴 Empate! Todos os espaços preenchidos 🟡`)
+                .setFields([
+                    { name: 'Partidas jogadas', value: `${games}`, inline: true },
+                    { name: `Vitórias de ${player1.username}`, value: `${p1Victories}`, inline: true },
+                    { name: `Vitórias de ${player2.username}`, value: `${p2Victories}`, inline: true },
+                    { name: 'Empates', value: `${ties}`, inline: true },
+                ]);
+
             return message.edit({ embeds: [embed] });
         }
 
@@ -100,10 +148,11 @@ async function multiPlayer(interaction: CommandInteraction, player2: User): Prom
             components: buttons(board)
         });
         wo = setTimeout(WO, 180_000);
-    }).once('end', async (): Promise<any> => {
-        message.edit({ components: [] }).catch(() => { });
-        clearTimeout(wo);
-    });
+    })
+        .once('end', async (): Promise<any> => {
+            message.edit({ components: [] }).catch(() => { });
+            clearTimeout(wo);
+        });
 
     function WO() {
         const winner = roundPlayer === player1 ? player2 : player1;
@@ -135,14 +184,30 @@ async function singlePlayer(interaction: CommandInteraction): Promise<any> {
         components: buttons(board)
     }) as Message;
 
-
     const collector = message.createMessageComponentCollector({
         filter: (int) => int.isButton()
     });
 
+    let victories = 0;
+    let defeats = 0;
+    let ties = 0;
+    let games = 1;
+
     collector.on('collect', async (buttonInt): Promise<any> => {
         if (!buttonInt.isButton()) return;
         buttonInt.deferReply({ ephemeral: false }).then(() => buttonInt.deleteReply().catch(() => { }));
+
+        if (buttonInt.customId === 'restart') {
+            games++;
+            board = initBoard();
+            embed.setTitle('🔴 Connect 4 🟡')
+                .setDescription(boardToString(board))
+
+            return message.edit({
+                embeds: [embed],
+                components: buttons(board)
+            });
+        }
 
         const columnChoice = parseInt(buttonInt.customId);
 
@@ -151,11 +216,31 @@ async function singlePlayer(interaction: CommandInteraction): Promise<any> {
         board = playerNewMove.board;
 
         if (checkWin(board, playerNewMove.addedSpace) === true) {
+            victories++;
             embed.setDescription(boardToString(board));
-            embed.setTitle(`🔴 Você venceu! 🔴`);
+            embed.setTitle(`🔴 Você venceu! 🔴`)
+                .setFields([
+                    { name: 'Partidas jogadas', value: `${games}`, inline: true },
+                    { name: `Vitórias`, value: `${victories}`, inline: true },
+                    { name: 'Derrotas', value: `${defeats}`, inline: true },
+                    { name: 'Empates', value: `${ties}`, inline: true },
+                ]);
 
-            collector.stop();
-            return interaction.editReply({ embeds: [embed] });
+            return interaction.editReply({ embeds: [embed], components: restartButton });
+        }
+
+        if (board.filter(emoji => emoji === empty).size === 0) {
+            ties++;
+            embed.setDescription(boardToString(board));
+            embed.setTitle(`${p1Emoji} Empate! Todos os espaços preenchidos ${p2Emoji}`)
+                .setFields([
+                    { name: 'Partidas jogadas', value: `${games}`, inline: true },
+                    { name: `Vitórias`, value: `${victories}`, inline: true },
+                    { name: 'Derrotas', value: `${defeats}`, inline: true },
+                    { name: 'Empates', value: `${ties}`, inline: true },
+                ]);
+
+            return interaction.editReply({ embeds: [embed], components: restartButton });
         }
 
         let playerMoveEmbed = new MessageEmbed()
@@ -180,21 +265,32 @@ async function singlePlayer(interaction: CommandInteraction): Promise<any> {
 
         board = botNewMove.board;
 
-        if (board.filter(emoji => emoji === empty).size === 0) {
+        if (checkWin(board, botNewMove.addedSpace) === true) {
+            defeats++;
+            embed.setTitle('🟡 Eu venci! 🟡');
+            embed.setDescription(boardToString(board))
+                .setFields([
+                    { name: 'Partidas jogadas', value: `${games}`, inline: true },
+                    { name: `Vitórias`, value: `${victories}`, inline: true },
+                    { name: 'Derrotas', value: `${defeats}`, inline: true },
+                    { name: 'Empates', value: `${ties}`, inline: true },
+                ]);
 
-            embed.setDescription(boardToString(board));
-            embed.setTitle(`${p1Emoji} Empate! Todos os espaços preenchidos ${p2Emoji}`);
-
-            collector.stop();
-            return interaction.editReply({ embeds: [embed] });
+            return interaction.editReply({ embeds: [embed], components: restartButton });
         }
 
-        if (checkWin(board, botNewMove.addedSpace) === true) {
-            embed.setTitle('🟡 Eu venci! 🟡');
+        if (board.filter(emoji => emoji === empty).size === 0) {
+            ties++;
             embed.setDescription(boardToString(board));
+            embed.setTitle(`${p1Emoji} Empate! Todos os espaços preenchidos ${p2Emoji}`)
+                .setFields([
+                    { name: 'Partidas jogadas', value: `${games}`, inline: true },
+                    { name: `Vitórias`, value: `${victories}`, inline: true },
+                    { name: 'Derrotas', value: `${defeats}`, inline: true },
+                    { name: 'Empates', value: `${ties}`, inline: true },
+                ]);
 
-            collector.stop();
-            return interaction.editReply({ embeds: [embed] });
+            return interaction.editReply({ embeds: [embed], components: restartButton });
         }
 
         let botMoveEmbed = new MessageEmbed(playerMoveEmbed)
@@ -204,7 +300,6 @@ async function singlePlayer(interaction: CommandInteraction): Promise<any> {
             embeds: [botMoveEmbed],
             components: buttons(board)
         });
-
 
     });
     collector.once('end', (): any => interaction.editReply({ components: [] }).catch(() => { }));
