@@ -23,25 +23,25 @@ client.on('ready', async () => {
 
 async function updateStatus() {
     try {
-
-        if (isLive === true) return;
-
         let i = 0;
+        setInterval(async () => {
 
-        moment.locale('pt-br');
-        const readySince = moment(client.readyAt).fromNow();
+            if (isLive === true) return;
 
-        const activities: ActivityOptions[] = [
-            { name: `Online ${readySince}`, type: 'PLAYING' },
-            { name: `${client.users.cache.size} membros no servidor`, type: 'PLAYING' },
-            { name: 'Você sabia que eu sou openSource? confira meu código em github.com/Louie-Cipher/rosebot', type: 'PLAYING' },
-        ]
+            moment.locale('pt-br');
+            const readySince = moment(client.readyAt).fromNow();
 
-        client.user.setActivity(activities[i]);
+            const activities: ActivityOptions[] = [
+                { name: `Estou online ${readySince}`, type: 'PLAYING' },
+                { name: `${client.users.cache.size} membros no servidor`, type: 'PLAYING' },
+                { name: 'Você sabia que eu sou openSource? confira meu código em github.com/Louie-Cipher/rosebot', type: 'PLAYING' },
+            ]
 
-        i++;
-        if (i >= activities.length) i = 0;
+            client.user.setActivity(activities[i]);
 
+            i++;
+            if (i >= activities.length) i = 0;
+        });
     }
     catch (err) { consoleError('[EVENT:READY:UPDATE_STATUS] ', err) }
 }
