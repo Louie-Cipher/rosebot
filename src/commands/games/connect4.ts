@@ -1,5 +1,7 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { CommandInteraction, User, MessageEmbed, Message, Collection, MessageActionRow, MessageButton } from "discord.js";
+import { getMember } from "../../db/getFromDB";
+import { membersDBrepo } from "../../db/repositories";
 import { Command } from "../../structures/Command";
 
 export default new Command({
@@ -10,15 +12,24 @@ export default new Command({
             .setName('player2')
             .setDescription('o jogador para desafiar')
             .setRequired(false)
+        )
+        .addIntegerOption(option => option
+            .setName('aposta')
+            .setDescription('valor em uwucoins para apostar')
+            .setMinValue(1)
+            .setRequired(false)
         ),
+
     execute: async ({ interaction }) => {
         await interaction.deferReply({ ephemeral: false });
         const player2 = interaction.options.getUser('player2');
+        const betValue = interaction.options.getInteger('aposta');
 
-        if (player2) multiPlayer(interaction, player2);
+        if (player2) multiPlayer(interaction, player2, betValue);
         else singlePlayer(interaction);
     }
 });
+
 const empty = '<:connect4_empty:986083607900749935>';
 const p1Emoji = '<:connect4_red:986083638930190386>';
 const p2Emoji = '<:connect4_yellow:986083667556323388>';
@@ -32,24 +43,39 @@ const restartButton = [new MessageActionRow()
             .setEmoji('🔄')
     )];
 
-async function multiPlayer(interaction: CommandInteraction, player2: User): Promise<any> {
+async function multiPlayer(interaction: CommandInteraction, player2: User, betValue: number): Promise<any> {
 
     interaction.deleteReply();
 
     const player1 = interaction.user;
 
+    let isBet = false;
+    let p1DB = await getMember(player1);
+    let p2DB = await getMember(player2);
+
+    if (betValue) {
+        if (p1DB.wallet < betValue)
+            return interaction.editReply({ content: `Você não tem uwucoins suficientes para essa aposta` });
+
+        if (p2DB.wallet < betValue)
+            return interaction.editReply({ content: `${player2.username} não tem uwucoins suficientes para essa aposta` });
+
+        isBet = true;
+    }
+
     let board = initBoard();
     let roundPlayer = player1;
 
-    let embed = new MessageEmbed()
+    let startEmbed = new MessageEmbed()
         .setColor('AQUA')
         .setTitle('🔴 Connect 4 🟡')
         .setFields([{ name: 'Vez de', value: roundPlayer.toString() }])
         .setDescription(boardToString(board));
+    if (isBet) startEmbed.setFooter({ text: `Valor da aposta: ${betValue} uwucoins` });
 
     const message = await interaction.channel.send({
         content: `${player1} vs ${player2}`,
-        embeds: [embed],
+        embeds: [startEmbed],
         components: buttons(board)
     });
 
@@ -59,6 +85,10 @@ async function multiPlayer(interaction: CommandInteraction, player2: User): Prom
 
     let p1Victories = 0;
     let p2Victories = 0;
+
+    let p1Profit = 0;
+    let p2Profit = 0;
+
     let ties = 0;
     let games = 1;
 
@@ -72,6 +102,18 @@ async function multiPlayer(interaction: CommandInteraction, player2: User): Prom
         buttonInt.deferReply({ ephemeral: false }).then(() => buttonInt.deleteReply().catch(() => { }));
 
         if (buttonInt.customId === 'restart') {
+
+            if (isBet) {
+                if (p1DB.wallet < betValue) {
+                    interaction.reply({ content: `${player1.toString()} não tem uwucoins suficientes para essa aposta` });
+                    return collector.stop();
+                }
+                if (p2DB.wallet < betValue) {
+                    interaction.reply({ content: `${player2.toString()} não tem uwucoins suficientes para essa aposta` });
+                    return collector.stop();
+                }
+                startEmbed.setFooter({ text: `Valor da aposta: ${betValue} uwucoins` });
+            }
 
             if (restartPlayers.has(buttonInt.user.id)) return;
 
@@ -87,13 +129,14 @@ async function multiPlayer(interaction: CommandInteraction, player2: User): Prom
             roundPlayer = p1Victories < p2Victories ? player1 : player2;
 
             board = initBoard();
-            embed.setTitle('🔴 Connect 4 🟡')
+
+            startEmbed.setTitle('🔴 Connect 4 🟡')
                 .setDescription(boardToString(board))
                 .setFields([{ name: 'Vez de', value: roundPlayer.toString() }]);
 
             return message.edit({
                 content: `${player1} vs ${player2}`,
-                embeds: [embed],
+                embeds: [startEmbed],
                 components: buttons(board)
             });
         }
@@ -109,9 +152,11 @@ async function multiPlayer(interaction: CommandInteraction, player2: User): Prom
         board = playerMove.board;
 
         if (checkWin(board, playerMove.addedSpace) === true) {
+
             roundPlayer.id === player1.id ? p1Victories++ : p2Victories++;
 
-            embed
+            let embed = new MessageEmbed()
+                .setColor('AQUA')
                 .setDescription(boardToString(board))
                 .setTitle(`${playerEmoji} ${roundPlayer.username} venceu! ${playerEmoji}`)
                 .setFields([
@@ -121,14 +166,33 @@ async function multiPlayer(interaction: CommandInteraction, player2: User): Prom
                     { name: 'Empates', value: `${ties}`, inline: true },
                 ]);
 
+            if (isBet) {
+                if (roundPlayer.id === player1.id) {
+                    p1Profit += betValue;
+                    p1DB.wallet += betValue;
+                }
+                else {
+                    p2Profit += betValue;
+                    p2DB.wallet += betValue;
+                }
+
+                await membersDBrepo.save(p1DB);
+                await membersDBrepo.save(p2DB);
+
+                const winnerProfit = roundPlayer.id === player1.id ? p1Profit : p2Profit;
+                embed.addField(`Lucro de ${roundPlayer.toString()}`, `${winnerProfit} uwucoins`);
+            }
+
             return message.edit({ embeds: [embed], components: restartButton });
         }
 
         if (board.filter(emoji => emoji === empty).size === 0) {
             ties++;
 
-            embed.setDescription(boardToString(board));
-            embed.setTitle(`🔴 Empate! Todos os espaços preenchidos 🟡`)
+            let embed = new MessageEmbed()
+                .setColor('AQUA')
+                .setTitle(`🔴 Empate! Todos os espaços preenchidos 🟡`)
+                .setDescription(boardToString(board))
                 .setFields([
                     { name: 'Partidas jogadas', value: `${games}`, inline: true },
                     { name: `Vitórias de ${player1.username}`, value: `${p1Victories}`, inline: true },
@@ -140,11 +204,11 @@ async function multiPlayer(interaction: CommandInteraction, player2: User): Prom
         }
 
         roundPlayer = roundPlayer === player1 ? player2 : player1;
-        embed.setDescription(boardToString(board))
+        startEmbed.setDescription(boardToString(board))
             .setFields([{ name: 'Vez de', value: roundPlayer.toString() }]);
 
         message.edit({
-            embeds: [embed],
+            embeds: [startEmbed],
             components: buttons(board)
         });
         wo = setTimeout(WO, 180_000);
@@ -158,12 +222,12 @@ async function multiPlayer(interaction: CommandInteraction, player2: User): Prom
         const winner = roundPlayer === player1 ? player2 : player1;
         const winnerEmoji = roundPlayer === player1 ? '🟡' : '🔴';
 
-        embed.setDescription(boardToString(board))
+        startEmbed.setDescription(boardToString(board))
             .setTitle(`${winnerEmoji} Connect 4 ${winnerEmoji}`)
             .setFields([{ name: '\u200b', value: `${roundPlayer.toString()} desistiu.\n${winner.toString()} ganhou!` }]);
 
         message.edit({
-            embeds: [embed],
+            embeds: [startEmbed],
             components: buttons(board)
         });
         collector.stop();
