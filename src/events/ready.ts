@@ -33,7 +33,7 @@ client.on('ready', async () => {
 
             i++;
             if (i >= activities.length) i = 0;
-        });
+        }, 10_000);
 
     } catch (err) { consoleError('[EVENT:READY] ', err) }
 });
