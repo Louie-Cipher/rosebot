@@ -15,8 +15,7 @@ client.on('ready', async () => {
         await registerCommands(guild);
 
         setInterval(async () => { await voiceXP(guild); }, 60_000 * 5);
-
-        setInterval(async () => { await updateStatus(); }, 5_000);
+        updateStatus();
 
     } catch (err) { consoleError('[EVENT:READY] ', err) }
 });
