@@ -15,16 +15,9 @@ client.on('ready', async () => {
         await registerCommands(guild);
 
         setInterval(async () => { await voiceXP(guild); }, 60_000 * 5);
-        updateStatus();
 
-    } catch (err) { consoleError('[EVENT:READY] ', err) }
-});
-
-async function updateStatus() {
-    try {
         let i = 0;
         setInterval(async () => {
-
             if (isLive === true) return;
 
             moment.locale('pt-br');
@@ -41,6 +34,6 @@ async function updateStatus() {
             i++;
             if (i >= activities.length) i = 0;
         });
-    }
-    catch (err) { consoleError('[EVENT:READY:UPDATE_STATUS] ', err) }
-}
+
+    } catch (err) { consoleError('[EVENT:READY] ', err) }
+});
