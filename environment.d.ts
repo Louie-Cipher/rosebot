@@ -5,8 +5,6 @@ declare global {
             welcomeChannel: string;
             leaveChannel: string;
             NODE_ENV: 'dev' | 'prod' | 'debug';
-            twitchUsername: string;
-            twitchPasword: string;
             roseId: string;
         }
     }
