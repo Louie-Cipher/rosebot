@@ -1,5 +1,4 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
-import { MessageEmbed } from "discord.js";
 import { DB } from "../../db";
 import { Command } from "../../structures/Command";
 import { consoleError } from "../../utils";
@@ -32,15 +31,16 @@ export default new Command({
 
             if (resultString.length > 4000) resultString = resultString.substring(0, 3999);
 
-            let embed = new MessageEmbed()
-                .setColor('AQUA')
-                .setTitle('Resultado da query')
-                .setDescription('```\n' + resultString + '\n```');
-
-            interaction.editReply({ embeds: [embed] });
+            interaction.editReply({
+                embeds: [{
+                    color: 'AQUA',
+                    title: 'Resultado da query',
+                    description: '```\n' + resultString + '\n```'
+                }]
+            });
         }
         catch (e) {
-            consoleError(e);
+            consoleError('[COMMAND:DB_QUERY]\n', e);
 
             interaction.editReply({
                 embeds: [{
