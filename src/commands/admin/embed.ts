@@ -31,6 +31,11 @@ export default new Command({
             .setName('image')
             .setDescription('url da imagem da embed')
             .setRequired(false)
+        )
+        .addStringOption(option => option
+            .setName('footer')
+            .setDescription('texto do rodapé da embed')
+            .setRequired(false)
         ),
 
     permissions: ['MANAGE_MESSAGES'],
@@ -45,6 +50,7 @@ export default new Command({
             const description = interaction.options.getString('description');
             const thumbnail = interaction.options.getString('thumbnail');
             const image = interaction.options.getString('image');
+            const footer = interaction.options.getString('footer');
 
             let embed = new MessageEmbed().setColor(color);
 
@@ -52,6 +58,7 @@ export default new Command({
             if (description) embed.setDescription(description.replaceAll('\\n', '\n'));
             if (thumbnail) embed.setThumbnail(thumbnail);
             if (image) embed.setImage(image);
+            if (footer) embed.setFooter({ text: footer.replaceAll('\\n', '\n') });
 
             const message = await interaction.channel.send({ embeds: [embed] });
 
@@ -64,7 +71,17 @@ export default new Command({
             });
 
         }
-        catch (err) { consoleError(err) }
+        catch (err) {
+            consoleError('[COMMAND:EMBED] ', err);
+
+            interaction.editReply({
+                embeds: [{
+                    color: 'RED',
+                    title: '❌ | erro ao enviar a mensagem embed',
+                    description: `${err}`
+                }]
+            }).catch(() => { });
+        }
 
     }
 });
