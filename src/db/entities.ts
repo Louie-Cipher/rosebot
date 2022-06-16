@@ -1,5 +1,4 @@
 import { Entity, Column, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm"
-import { membersDBrepo } from "./repositories"
 
 @Entity({ name: 'buttonRoles' })
 export class ButtonRolesDBmodel {
