@@ -1,7 +1,7 @@
 {
     "name": "rosebot",
     "version": "1.0.0",
-    "description": "",
+    "description": "bot oficial do servidor familia mogeko :3",
     "main": "dist/index.js",
     "scripts": {
         "start:dev": "ts-node src/index.ts",
@@ -21,6 +21,10 @@
     "license": "MIT",
     "engines": {
         "node": ">=16.6.0"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Louie-Cipher/rosebot"
     },
     "dependencies": {
         "@discordjs/builders": "^0.13.0",
