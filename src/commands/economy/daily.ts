@@ -6,6 +6,7 @@ import { localTime } from "../../utils";
 
 const twitchSubRole = "976548310112419851";
 const boosterRole = "868886134602756158";
+const rainbow_hype = '<a:rainbow_hype:866480734834130945>';
 
 export default new Command({
     data: new SlashCommandBuilder()
@@ -29,12 +30,18 @@ export default new Command({
 
                 const s = memberDB.dailyCombo > 1 ? 's' : '';
 
+                const comboString = memberDB.dailyCombo === 30 ? '30 ou mais' : `${memberDB.dailyCombo}`;
+
                 let embed = new MessageEmbed()
                     .setColor('YELLOW')
                     .setTitle('Você já pegou suas uwucoins diárias hoje!')
                     .setDescription(`Volte amanhã para pegar novamente!\n` +
-                        `Você tem um combo de ${memberDB.dailyCombo} dia${s} seguido${s} de daily\n\n` +
+                        `Você tem um combo de ${comboString} dia${s} seguido${s} de daily\n\n` +
                         `**DICA:** Você sabia que sendo sub na twitch ou booster no servidor,\nvocê ganha mais uwucoins diárias?`);
+
+                if (memberDB.dailyCombo === 30)
+                    embed.addField(`${rainbow_hype} Você tem o combo máximo no daily! ${rainbow_hype}`,
+                        `Parabéns, continue resgatando todos os dias para manter seu combo ${rainbow_hype}`);
 
                 return interaction.editReply({ embeds: [embed] });
             }
@@ -56,17 +63,23 @@ export default new Command({
         if (memberDB.dailyCombo < 30) memberDB.dailyCombo += 1;
 
         const s = memberDB.dailyCombo > 1 ? 's' : '';
+        const comboString = memberDB.dailyCombo === 30 ? '30 ou mais' : `${memberDB.dailyCombo}`;
 
         await membersDBrepo.save(memberDB);
 
+        let embed = new MessageEmbed()
+            .setColor('AQUA')
+            .setTitle('Você pegou suas uwucoins diárias!')
+            .setDescription(`Você ganhou <:uwucoin:717098984257011712>${newCoins}!\n` +
+                `Você tem um combo de ${comboString} dia${s} seguido${s} de daily\n\n` +
+                `**DICA:** Você sabia que sendo sub na twitch ou booster no servidor,\nvocê ganha mais uwucoins diárias?`);
+
+        if (memberDB.dailyCombo === 30)
+            embed.addField(`${rainbow_hype} Você tem o combo máximo no daily! ${rainbow_hype}`,
+                `Parabéns, continue resgatando todos os dias para manter seu combo ${rainbow_hype}`);
+
         interaction.editReply({
-            embeds: [{
-                color: 'AQUA',
-                title: 'Você pegou suas uwucoins diárias!',
-                description: `Você ganhou <:uwucoin:978022888470904832>${newCoins} uwucoins hoje!\n` +
-                    `Você tem um combo de ${memberDB.dailyCombo} dia${s} seguido${s} de daily\n\n` +
-                    `**DICA:** Você sabia que sendo sub na twitch ou booster no servidor,\nvocê ganha mais uwucoins diárias?`
-            }]
+            embeds: [embed]
         }).catch(() => { });
 
     }
