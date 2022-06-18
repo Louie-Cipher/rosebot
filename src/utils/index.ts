@@ -15,7 +15,7 @@ export function consoleError(...args: any[]) {
     console.error(date, ...args);
 }
 
-export const localTime = (date: Date): Date => new Date(date.getTime() - 10800000);
+export const localTime = (date: Date): Date => new Date(date.toLocaleString("en-US", {timeZone: "America/Sao_Paulo"}));
 
 export const dateTime = (date: Date): string =>
     `${datef(date.getDate())}/${datef(date.getMonth() + 1)} ${datef(date.getHours())}:${datef(date.getMinutes())}:${datef(date.getSeconds())}`;
