@@ -24,9 +24,7 @@ export default new Command({
         if (lastDaily) {
             const now = new Date();
 
-            const dailyLocal = localTime(memberDB.lastDaily);
-
-            if (now.getDate() === dailyLocal.getDate() && now.getMonth() === dailyLocal.getMonth() && now.getFullYear() === dailyLocal.getFullYear()) {
+            if (now.getDate() === lastDaily.getDate() && now.getMonth() === lastDaily.getMonth() && now.getFullYear() === lastDaily.getFullYear()) {
 
                 const s = memberDB.dailyCombo > 1 ? 's' : '';
 
@@ -46,7 +44,7 @@ export default new Command({
                 return interaction.editReply({ embeds: [embed] });
             }
 
-            if (now.getDate() - dailyLocal.getDate() > 1 || now.getMonth() - dailyLocal.getMonth() > 1 || now.getFullYear() - dailyLocal.getFullYear() > 1)
+            if (now.getDate() - lastDaily.getDate() > 1 || now.getMonth() - lastDaily.getMonth() > 1 || now.getFullYear() - lastDaily.getFullYear() > 1)
                 memberDB.dailyCombo = 0;
         }
 
