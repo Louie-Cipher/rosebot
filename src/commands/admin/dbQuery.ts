@@ -11,9 +11,8 @@ export default new Command({
             .setName('query')
             .setRequired(true)
             .setDescription('A query a ser executada')
-        ),
-
-    permissions: ['ADMINISTRATOR'],
+        )
+        .setDefaultMemberPermissions(8), // ADMINISTRATOR
 
     execute: async ({ interaction }) => {
 
@@ -25,7 +24,7 @@ export default new Command({
             const result = await DB.manager.query(query);
 
             if (!result || !result.length)
-                return interaction.editReply('Nenhum resultado encontrado');
+                return interaction.editReply('Essa query não retornou nenhum resultado.');
 
             let resultString = JSON.stringify(result);
 

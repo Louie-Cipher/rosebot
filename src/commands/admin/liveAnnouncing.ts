@@ -6,8 +6,8 @@ import liveAnnouncing from "../../utils/liveAnnouncing";
 export default new Command({
     data: new SlashCommandBuilder()
         .setName('live-announcing')
-        .setDescription('força a atualização do live announcing'),
-    permissions: ['MANAGE_MESSAGES'],
+        .setDescription('força a atualização do live announcing')
+        .setDefaultMemberPermissions(4194304), // MUTE_MEMBERS
 
     execute: async ({ interaction }) => {
         try {

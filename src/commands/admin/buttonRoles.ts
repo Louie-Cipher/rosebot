@@ -7,7 +7,6 @@ import { consoleError } from "../../utils";
 
 export default new Command({
     data: cmdBuilder(),
-    permissions: ['ADMINISTRATOR'],
     execute: async ({ client, interaction }) => {
         try {
             await interaction.deferReply({ ephemeral: true });
@@ -90,7 +89,8 @@ function cmdBuilder() {
             .setName('message-id')
             .setDescription('id da mensagem que terá os cargos por botões')
             .setRequired(true)
-        );
+        )
+        .setDefaultMemberPermissions(8); // ADMINISTRATOR
 
     for (let i = 0; i < 10; i++) {
         data.addRoleOption(option => option

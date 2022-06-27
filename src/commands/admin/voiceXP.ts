@@ -6,9 +6,8 @@ import { consoleError } from "../../utils";
 export default new Command({
     data: new SlashCommandBuilder()
         .setName('update-voicexp')
-        .setDescription('atualiza o xp por call'),
-
-    permissions: ['ADMINISTRATOR'],
+        .setDescription('atualiza o xp por call')
+        .setDefaultMemberPermissions(8),
 
     execute: async ({ interaction }) => {
         try {

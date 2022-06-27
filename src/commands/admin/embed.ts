@@ -36,7 +36,8 @@ export default new Command({
             .setName('footer')
             .setDescription('texto do rodapé da embed')
             .setRequired(false)
-        ),
+        )
+        .setDefaultMemberPermissions(8192), // MANAGE_MESSAGES
 
     permissions: ['MANAGE_MESSAGES'],
 

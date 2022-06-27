@@ -16,9 +16,7 @@ export default new Command({
             .setDescription('usuário para ter as mensagens apagadas')
             .setRequired(false)
         )
-        .setDefaultPermission(false),
-
-    permissions: ['MANAGE_MESSAGES'],
+        .setDefaultMemberPermissions(8192), // MANAGE_MESSAGES
 
     execute: async ({ interaction }) => {
         try {

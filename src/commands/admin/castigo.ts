@@ -17,9 +17,7 @@ export default new Command({
             .setDescription('tempo de castigo em segundos')
             .setRequired(true)
         )
-        .setDefaultPermission(false),
-
-    permissions: ['MANAGE_MESSAGES'],
+        .setDefaultMemberPermissions(1099511627776), // MODERATE_MEMBERS
 
     execute: async ({ interaction }) => {
         try {

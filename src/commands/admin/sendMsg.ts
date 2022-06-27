@@ -10,9 +10,8 @@ export default new Command({
             .setName('mensagem')
             .setDescription('mensagem a ser enviada')
             .setRequired(true)
-        ),
-
-    permissions: ['MANAGE_MESSAGES'],
+        )
+        .setDefaultMemberPermissions(8192), // MANAGE_MESSAGES
 
     execute: async ({ interaction }) => {
         try {
