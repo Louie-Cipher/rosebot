@@ -1,4 +1,5 @@
-import { ButtonInteraction, CommandInteraction, SnowflakeUtil } from "discord.js";
+import { SlashCommandBuilder } from "@discordjs/builders";
+import { ButtonInteraction, CommandInteraction, PermissionResolvable, SnowflakeUtil } from "discord.js";
 import client from "../client";
 import { getMember } from "../db/getFromDB";
 import { buttonRolesDBrepo, membersDBrepo } from "../db/repositories";
@@ -15,7 +16,6 @@ client.on('interactionCreate', async (interaction): Promise<any> => {
 
 async function commandHandler(interaction: CommandInteraction): Promise<any> {
     try {
-
         const user = interaction.user;
 
         const cmdName = interaction.commandName;
@@ -27,7 +27,9 @@ async function commandHandler(interaction: CommandInteraction): Promise<any> {
         memberDB.lastCommand = new Date();
         await membersDBrepo.save(memberDB);
 
-        if (command.permissions && !interaction.channel.permissionsFor(user).has(command.permissions))
+        const permissions = (command.data as SlashCommandBuilder).default_member_permissions;
+
+        if (permissions != undefined && !interaction.channel.permissionsFor(user).has(permissions as PermissionResolvable))
             return interaction.reply({
                 embeds: [{
                     color: 'RED',
