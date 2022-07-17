@@ -4,6 +4,7 @@ import { membersDBrepo } from "../../db/repositories";
 import { Command } from "../../structures/Command";
 import { localTime } from "../../utils";
 
+const uwucoin = '<:uwucoin:978022888470904832>';
 const twitchSubRole = "976548310112419851";
 const boosterRole = "868886134602756158";
 const rainbow_hype = '<a:rainbow_hype:866480734834130945>';
@@ -68,7 +69,7 @@ export default new Command({
         let embed = new MessageEmbed()
             .setColor('AQUA')
             .setTitle('Você pegou suas uwucoins diárias!')
-            .setDescription(`Você ganhou <:uwucoin:717098984257011712>${newCoins}!\n` +
+            .setDescription(`Você ganhou ${uwucoin} ${newCoins} uwucoins!\n` +
                 `Você tem um combo de ${comboString} dia${s} seguido${s} de daily\n\n` +
                 `**DICA:** Você sabia que sendo sub na twitch ou booster no servidor,\nvocê ganha mais uwucoins diárias?`);
 
