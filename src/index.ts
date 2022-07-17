@@ -4,5 +4,5 @@ import 'dotenv/config';
 import client from './client';
 init(client);
 
-process.on('uncaughtException', (err) => consoleError('uncaughtException:\n' + err));
-process.on('unhandledRejection', (err) => consoleError('unhandledRejection:\n' + err));
+process.on('uncaughtException', (err) => consoleError('[UNCAUGHT_EXCEPTION]\n' + err));
+process.on('unhandledRejection', (err) => consoleError('[UNHANDLED_REJECTION]\n' + err));
