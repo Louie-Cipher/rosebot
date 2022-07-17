@@ -25,7 +25,7 @@ client.on('ready', async () => {
 
             const activities: ActivityOptions[] = [
                 { name: `Estou online ${readySince}`, type: 'PLAYING' },
-                { name: `${guild.members.cache.size} membros no servidor`, type: 'PLAYING' },
+                { name: `Já somos ${guild.members.cache.size} membros no servidor`, type: 'PLAYING' },
                 { name: 'Você sabia que eu sou openSource? confira meu código em github.com/Louie-Cipher/rosebot', type: 'PLAYING' },
             ]
 
