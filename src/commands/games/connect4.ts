@@ -30,9 +30,9 @@ export default new Command({
     }
 });
 
-const empty = '<:connect4_empty:986083607900749935>';
-const p1Emoji = '<:connect4_red:986083638930190386>';
-const p2Emoji = '<:connect4_yellow:986083667556323388>';
+const empty = '<:connect4_empty:994025675897970698>';
+const p1Emoji = '<:connect4_red:994025819515138068>';
+const p2Emoji = '<:connect4_yellow:994025900674908260>';
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 const restartButton = [new MessageActionRow()
     .addComponents(
